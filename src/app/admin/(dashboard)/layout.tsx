@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ExternalLink, LogOut } from "lucide-react";
 import { AdminNav } from "@/components/admin/admin-nav";
+import { LogoIcon } from "@/components/layout/logo";
 import { siteConfig } from "@/lib/config";
 import { signOut } from "../login/actions";
 
@@ -10,7 +11,8 @@ export default function AdminDashboardLayout({ children }: { children: React.Rea
       <header className="bg-brand-dark text-white">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 md:flex-row md:items-center md:gap-6">
           <div className="flex items-center justify-between">
-            <Link href="/admin" className="font-bold">
+            <Link href="/admin" className="flex items-center gap-2 font-bold">
+              <LogoIcon className="size-7" />
               {siteConfig.name} <span className="font-normal text-brand-accent">Admin</span>
             </Link>
             <div className="flex items-center gap-1 md:hidden">

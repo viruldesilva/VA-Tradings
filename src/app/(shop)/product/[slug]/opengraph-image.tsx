@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { brandIconDataUri } from "@/lib/brand-icon";
 import { siteConfig } from "@/lib/config";
 import { getProductBySlug } from "@/lib/data/catalog";
 import { formatLKR } from "@/lib/format";
@@ -14,15 +15,14 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   const { slug } = await params;
   const product = await getProductBySlug(slug).catch(() => null);
   const photo = product?.images.find(isRenderable);
+  const icon = await brandIconDataUri();
 
   return new ImageResponse(
     (
       <div style={{ display: "flex", width: "100%", height: "100%", background: "#0F172A", color: "white" }}>
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", padding: 64, flex: 1 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 16, fontSize: 32, fontWeight: 700 }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 56, height: 56, borderRadius: 12, background: "#2563EB" }}>
-              {siteConfig.shortName}
-            </div>
+            <img src={icon} alt="" width={56} height={56} />
             {siteConfig.name}
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>

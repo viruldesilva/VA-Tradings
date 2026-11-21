@@ -1,7 +1,6 @@
 /** Shop-wide constants. Change the name/tagline here and it updates everywhere. */
 export const siteConfig = {
   name: "VA Tradings",
-  shortName: "VA",
   tagline: "Tech accessories, delivered island-wide",
   description:
     "Phone cases, chargers, earbuds, cables and more. Island-wide delivery in Sri Lanka with Cash on Delivery.",

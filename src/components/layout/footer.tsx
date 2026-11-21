@@ -3,6 +3,7 @@ import { cacheLife } from "next/cache";
 import { Phone } from "lucide-react";
 import { footerNav, siteConfig } from "@/lib/config";
 import { getSettings } from "@/lib/data/settings";
+import { LogoIcon } from "./logo";
 
 export async function Footer() {
   "use cache";
@@ -15,7 +16,10 @@ export async function Footer() {
     <footer className="mt-16 bg-brand-dark text-slate-300">
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:grid-cols-2 md:grid-cols-4">
         <div className="sm:col-span-2">
-          <p className="text-lg font-bold text-white">{siteConfig.name}</p>
+          <p className="flex items-center gap-2 text-lg font-bold text-white">
+            <LogoIcon className="size-8" />
+            {siteConfig.name}
+          </p>
           <p className="mt-2 max-w-sm text-sm">{siteConfig.description}</p>
           {settings.shop_phone && (
             <a

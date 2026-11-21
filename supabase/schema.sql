@@ -98,6 +98,25 @@ create table if not exists public.admin_users (
 );
 
 -- -----------------------------------------------------------------------------
+-- Table privileges
+-- Newer Supabase projects don't auto-grant API access to tables created in the
+-- SQL editor, so grant it explicitly. Row Level Security (below) still decides
+-- which ROWS each role can see; these grants only allow the role to ask.
+-- -----------------------------------------------------------------------------
+
+grant usage on schema public to anon, authenticated, service_role;
+
+-- Visitors: read-only access to the public shop tables only.
+grant select on public.categories, public.products, public.settings to anon;
+
+-- Logged-in users: RLS limits everything to admins (see is_admin()).
+grant select, insert, update, delete on all tables in schema public to authenticated;
+
+-- Server-side code (orders API, PayHere callback) uses the service role.
+grant all on all tables in schema public to service_role;
+grant usage, select on all sequences in schema public to authenticated, service_role;
+
+-- -----------------------------------------------------------------------------
 -- Indexes
 -- -----------------------------------------------------------------------------
 

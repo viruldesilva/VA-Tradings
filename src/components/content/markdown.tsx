@@ -3,13 +3,16 @@ import { Fragment, type ReactNode } from "react";
 /**
  * Tiny, dependency-free Markdown renderer for product descriptions (the format
  * ChatGPT's "Copy" button produces). Supports headings, **bold**, *italic*,
- * `code`, bullet / numbered lists, horizontal rules and paragraphs.
+ * `code`, bullet / numbered lists, tables, horizontal rules and paragraphs.
  * It only ever creates React elements (no raw HTML), so it's XSS-safe.
  */
+
+type Align = "left" | "center" | "right" | undefined;
 
 type Block =
   | { type: "heading"; level: number; text: string }
   | { type: "ul" | "ol"; items: string[] }
+  | { type: "table"; header: string[] | null; align: Align[]; rows: string[][] }
   | { type: "hr" }
   | { type: "p"; lines: string[] };
 
@@ -17,17 +20,48 @@ const HEADING = /^(#{1,6})\s+(.*?)\s*#*\s*$/;
 const HR = /^\s*([-*_])(\s*\1){2,}\s*$/;
 const UL_ITEM = /^\s*[-*+•]\s+(.*)$/;
 const OL_ITEM = /^\s*\d+[.)]\s+(.*)$/;
+const TABLE_ROW = /^\s*\|.*\|\s*$/;
+const TABLE_SEPARATOR = /^\s*\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|?\s*$/;
+
+/** "| a | b \| c |" → ["a", "b | c"] */
+function splitRow(line: string): string[] {
+  return line
+    .trim()
+    .replace(/^\|/, "")
+    .replace(/(?<!\\)\|$/, "")
+    .split(/(?<!\\)\|/)
+    .map((cell) => cell.trim().replace(/\\\|/g, "|"));
+}
+
+function parseTable(lines: string[]): Block {
+  const hasHeader = lines.length > 1 && TABLE_SEPARATOR.test(lines[1]);
+  const align: Align[] = hasHeader
+    ? splitRow(lines[1]).map((c) =>
+        c.startsWith(":") && c.endsWith(":") ? "center" : c.endsWith(":") ? "right" : c.startsWith(":") ? "left" : undefined,
+      )
+    : [];
+  const body = (hasHeader ? lines.slice(2) : lines).filter((l) => !TABLE_SEPARATOR.test(l));
+  return {
+    type: "table",
+    header: hasHeader ? splitRow(lines[0]) : null,
+    align,
+    rows: body.map(splitRow),
+  };
+}
 
 function parseBlocks(source: string): Block[] {
   const blocks: Block[] = [];
   let para: string[] = [];
   let list: { type: "ul" | "ol"; items: string[] } | null = null;
+  let table: string[] = [];
 
   const flush = () => {
     if (para.length) blocks.push({ type: "p", lines: para });
     if (list) blocks.push(list);
+    if (table.length) blocks.push(parseTable(table));
     para = [];
     list = null;
+    table = [];
   };
 
   for (const raw of source.replace(/\r\n?/g, "\n").split("\n")) {
@@ -36,6 +70,13 @@ function parseBlocks(source: string): Block[] {
       flush();
       continue;
     }
+
+    if (TABLE_ROW.test(line) || (table.length === 1 && TABLE_SEPARATOR.test(line))) {
+      if (!table.length) flush();
+      table.push(line);
+      continue;
+    }
+    if (table.length) flush();
 
     const heading = HEADING.exec(line);
     if (heading) {
@@ -126,6 +167,57 @@ export function Markdown({ source, className }: { source: string; className?: st
           }
           case "hr":
             return <hr key={i} className="my-4 border-slate-200" />;
+          case "table": {
+            const cols = Math.max(block.header?.length ?? 0, ...block.rows.map((r) => r.length));
+            const cells = (row: string[]) => Array.from({ length: cols }, (_, c) => row[c] ?? "");
+            return (
+              <div key={i} className="my-4 overflow-x-auto rounded-xl border border-slate-200">
+                <table className="w-full border-collapse text-left text-sm">
+                  {block.header && (
+                    <thead className="bg-slate-50 text-brand-dark">
+                      <tr>
+                        {cells(block.header).map((cell, c) => (
+                          <th
+                            key={c}
+                            scope="col"
+                            style={{ textAlign: block.align[c] }}
+                            className="px-3 py-2.5 font-semibold"
+                          >
+                            {renderInline(cell)}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                  )}
+                  <tbody>
+                    {block.rows.map((row, r) => (
+                      <tr
+                        key={r}
+                        className={block.header || r > 0 ? "border-t border-slate-200" : undefined}
+                      >
+                        {cells(row).map((cell, c) =>
+                          c === 0 ? (
+                            <th
+                              key={c}
+                              scope="row"
+                              style={{ textAlign: block.align[c] }}
+                              className="px-3 py-2 font-medium text-slate-500"
+                            >
+                              {renderInline(cell)}
+                            </th>
+                          ) : (
+                            <td key={c} style={{ textAlign: block.align[c] }} className="px-3 py-2">
+                              {renderInline(cell)}
+                            </td>
+                          ),
+                        )}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            );
+          }
           case "ul":
           case "ol": {
             const Tag = block.type;
@@ -163,6 +255,10 @@ export function Markdown({ source, className }: { source: string; className?: st
 export function stripMarkdown(source: string): string {
   return source
     .replace(/\r\n?/g, "\n")
+    .replace(/^[ \t]*\|?[ \t]*:?-+:?[ \t]*(\|[ \t]*:?-+:?[ \t]*)*\|?[ \t]*$/gm, "")
+    .replace(/^[ \t]*\|(.*)\|[ \t]*$/gm, (_, row: string) =>
+      row.split(/(?<!\\)\|/).map((c) => c.trim().replace(/\\\|/g, "|")).join(": "),
+    )
     .replace(/^\s*#{1,6}\s+/gm, "")
     .replace(/^\s*([-*_])(\s*\1){2,}\s*$/gm, "")
     .replace(/^\s*(?:[-*+•]|\d+[.)])\s+/gm, "")

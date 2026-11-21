@@ -10,7 +10,8 @@ export function ProductGallery({ images, name }: { images: string[]; name: strin
   const current = images[active];
 
   return (
-    <div className="grid gap-3">
+    // content-start + self-start: don't stretch to the (often much taller) details column.
+    <div className="grid content-start gap-3 self-start">
       <div className="relative aspect-square overflow-hidden rounded-2xl bg-slate-100">
         {current ? (
           <Image
@@ -28,7 +29,8 @@ export function ProductGallery({ images, name }: { images: string[]; name: strin
       </div>
 
       {images.length > 1 && (
-        <ul className="flex gap-2 overflow-x-auto pb-1" aria-label="Product photos">
+        // p-1 / -m-1: room for the selection ring, which overflow-x-auto would otherwise clip.
+        <ul className="-m-1 flex gap-2 overflow-x-auto p-1" aria-label="Product photos">
           {images.map((url, i) => (
             <li key={url} className="shrink-0">
               <button

@@ -15,7 +15,8 @@ import { formatLKR } from "@/lib/format";
 import { slugify } from "@/lib/slug";
 import type { Category } from "@/lib/types/database";
 import { cn } from "@/lib/utils";
-import { FormField, FormMessage, NativeSelect } from "./form-field";
+import { CategoryPicker } from "./category-picker";
+import { FormField, FormMessage } from "./form-field";
 import { ImageUploader } from "./image-uploader";
 
 type Props = {
@@ -169,35 +170,14 @@ export function ProductForm({ action, categories, product }: Props) {
             <CardTitle>Organisation</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4">
-            <FormField
-              label="Category"
-              htmlFor="category_id"
-              error={err("category_id")}
-              hint={
-                categories.length === 0 ? (
-                  <>
-                    No categories yet.{" "}
-                    <Link href="/admin/categories" className="underline">
-                      Add one
-                    </Link>
-                    .
-                  </>
-                ) : undefined
-              }
-            >
-              <NativeSelect
-                id="category_id"
-                name="category_id"
-                defaultValue={product?.category_id ?? ""}
-              >
-                <option value="">No category</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </NativeSelect>
-            </FormField>
+            <div className="grid gap-1.5">
+              <Label htmlFor="category_id">Category</Label>
+              <CategoryPicker
+                categories={categories}
+                defaultValue={product?.category_id ?? null}
+                error={err("category_id")}
+              />
+            </div>
 
             <SwitchRow
               name="in_stock"

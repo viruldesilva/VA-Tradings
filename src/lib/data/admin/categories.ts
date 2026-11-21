@@ -34,11 +34,16 @@ async function resolveSlug(input: CategoryInput, excludeId?: string) {
   return uniqueSlug(supabase, "categories", base, excludeId);
 }
 
-export async function createCategory(input: CategoryInput) {
+export async function createCategory(input: CategoryInput): Promise<Category> {
   const { supabase } = await requireAdmin();
   const slug = await resolveSlug(input);
-  const { error } = await supabase.from("categories").insert({ name: input.name, slug });
+  const { data, error } = await supabase
+    .from("categories")
+    .insert({ name: input.name, slug })
+    .select("id, name, slug")
+    .single();
   if (error) throw error;
+  return data;
 }
 
 export async function updateCategory(id: string, input: CategoryInput) {

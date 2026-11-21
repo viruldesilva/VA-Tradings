@@ -4,6 +4,7 @@ import { refresh, updateTag } from "next/cache";
 import { actionError, actionOk, type ActionState } from "@/lib/action-state";
 import { CACHE_TAGS } from "@/lib/cache-tags";
 import { createCategory, deleteCategory, updateCategory } from "@/lib/data/admin/categories";
+import type { Category } from "@/lib/types/database";
 import { categorySchema } from "@/lib/validation/category";
 import { fieldErrors, formString } from "@/lib/validation/form";
 
@@ -49,4 +50,25 @@ export async function removeCategory(categoryId: string): Promise<ActionState> {
   }
   invalidate();
   return actionOk("Category deleted.");
+}
+
+/**
+ * Creates a category from the product form ("+ New category") and returns it,
+ * so the form can select it without reloading (and without losing input).
+ */
+export async function quickCreateCategory(
+  name: string,
+): Promise<{ ok: true; category: Category } | { ok: false; message: string }> {
+  const parsed = categorySchema.safeParse({ name, slug: "" });
+  if (!parsed.success) {
+    return { ok: false, message: parsed.error.issues[0]?.message ?? "Enter a category name" };
+  }
+  try {
+    const category = await createCategory(parsed.data);
+    updateTag(CACHE_TAGS.categories);
+    return { ok: true, category };
+  } catch (err) {
+    console.error("[quickCreateCategory]", err);
+    return { ok: false, message: "Couldn't add the category. Please try again." };
+  }
 }

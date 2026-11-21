@@ -6,6 +6,7 @@ import { Banknote, ChevronRight, Truck } from "lucide-react";
 import { ProductGallery } from "@/components/product/product-gallery";
 import { ProductGrid } from "@/components/product/product-grid";
 import { ProductPurchase } from "@/components/product/product-purchase";
+import { ProductWarranty } from "@/components/product/product-warranty";
 import { SectionHeading } from "@/components/shop/section-heading";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -80,6 +81,8 @@ async function ProductDetails({ params }: { params: Params }) {
               )}
             </div>
           </div>
+
+          <ProductWarranty warrantyMonths={product.warranty_months} condition={product.condition} />
 
           <ProductPurchase
             product={{
@@ -174,6 +177,11 @@ function ProductJsonLd({ product, url }: { product: ShopProduct; url: string }) 
           "@type": "Offer",
           price: product.price.toFixed(2),
           priceCurrency: "LKR",
+          itemCondition: {
+            new: "https://schema.org/NewCondition",
+            used: "https://schema.org/UsedCondition",
+            refurbished: "https://schema.org/RefurbishedCondition",
+          }[product.condition],
           availability: product.in_stock
             ? "https://schema.org/InStock"
             : "https://schema.org/OutOfStock",

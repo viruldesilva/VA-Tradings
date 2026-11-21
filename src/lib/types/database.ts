@@ -5,6 +5,9 @@
  * (then re-add the convenience aliases at the bottom).
  */
 
+import type { ProductCondition } from "@/lib/product-details";
+
+export type { ProductCondition };
 export type PaymentMethod = "cod" | "payhere";
 export type PaymentStatus = "pending" | "paid" | "failed";
 export type OrderStatus = "new" | "bought" | "shipped" | "delivered" | "cancelled";
@@ -40,6 +43,8 @@ export type Database = {
           in_stock: boolean;
           is_visible: boolean;
           images: string[];
+          warranty_months: number | null;
+          condition: ProductCondition;
           category_id: string | null;
           created_at: string;
         };
@@ -52,6 +57,8 @@ export type Database = {
           in_stock?: boolean;
           is_visible?: boolean;
           images?: string[];
+          warranty_months?: number | null;
+          condition?: ProductCondition;
           category_id?: string | null;
           created_at?: string;
         };
@@ -64,6 +71,8 @@ export type Database = {
           in_stock?: boolean;
           is_visible?: boolean;
           images?: string[];
+          warranty_months?: number | null;
+          condition?: ProductCondition;
           category_id?: string | null;
           created_at?: string;
         };

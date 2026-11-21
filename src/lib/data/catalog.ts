@@ -17,7 +17,7 @@ export type ShopProduct = Omit<Product, "is_visible"> & {
 
 
 const SHOP_PRODUCT_SELECT =
-  "id, name, slug, description, price, in_stock, images, category_id, created_at, categories(name, slug)";
+  "id, name, slug, description, price, in_stock, images, warranty_months, condition, category_id, created_at, categories(name, slug)";
 
 const escapeLike = (term: string) => term.replace(/[\\%_]/g, (c) => `\\${c}`);
 

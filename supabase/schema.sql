@@ -26,9 +26,20 @@ create table if not exists public.products (
   in_stock    boolean not null default true,
   is_visible  boolean not null default true,
   images      text[] not null default '{}',
+  warranty_months integer check (warranty_months between 0 and 120),
+  condition   text not null default 'new'
+              check (condition in ('new', 'used', 'refurbished')),
   category_id uuid references public.categories (id) on delete set null,
   created_at  timestamptz not null default now()
 );
+
+-- Added later: bring existing products tables up to date.
+alter table public.products
+  add column if not exists warranty_months integer
+    check (warranty_months between 0 and 120);
+alter table public.products
+  add column if not exists condition text not null default 'new'
+    check (condition in ('new', 'used', 'refurbished'));
 
 -- Supplier details live in their own table so the public can never read them.
 create table if not exists public.product_private (

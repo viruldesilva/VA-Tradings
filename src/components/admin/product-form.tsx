@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useActionForm } from "@/hooks/use-action-form";
 import type { ActionState } from "@/lib/action-state";
 import type { AdminProduct } from "@/lib/data/admin/products";
+import { CONDITION_LABELS, MAX_WARRANTY_MONTHS, PRODUCT_CONDITIONS } from "@/lib/product-details";
 import { formatLKR } from "@/lib/format";
 import { slugify } from "@/lib/slug";
 import type { Category } from "@/lib/types/database";
@@ -162,6 +163,48 @@ export function ProductForm({ action, categories, product }: Props) {
                 {profit === null || Number.isNaN(profit) ? "—" : formatLKR(profit)}
               </span>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Warranty &amp; condition</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-4">
+            <FormField
+              label="Warranty (months)"
+              htmlFor="warranty_months"
+              error={err("warranty_months")}
+              hint={`e.g. 6 shows as "06 Months", 12 as "1 Year". Leave blank for no warranty.`}
+            >
+              <Input
+                id="warranty_months"
+                name="warranty_months"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                max={MAX_WARRANTY_MONTHS}
+                step={1}
+                defaultValue={product?.warranty_months?.toString() ?? ""}
+                aria-invalid={!!err("warranty_months")}
+              />
+            </FormField>
+
+            <FormField label="Condition" htmlFor="condition" error={err("condition")}>
+              <select
+                id="condition"
+                name="condition"
+                defaultValue={product?.condition ?? "new"}
+                aria-invalid={!!err("condition")}
+                className="h-8 w-full rounded-lg border border-input bg-transparent px-2 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive md:text-sm"
+              >
+                {PRODUCT_CONDITIONS.map((c) => (
+                  <option key={c} value={c}>
+                    {CONDITION_LABELS[c]}
+                  </option>
+                ))}
+              </select>
+            </FormField>
           </CardContent>
         </Card>
 

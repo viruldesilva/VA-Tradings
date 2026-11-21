@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { MAX_WARRANTY_MONTHS, PRODUCT_CONDITIONS } from "@/lib/product-details";
 import { isProductImageUrl, MAX_IMAGES_PER_PRODUCT } from "@/lib/storage";
 import { emptyToNull } from "./form";
 
@@ -29,6 +30,16 @@ export const productSchema = z.object({
     z.url({ protocol: /^https?$/, error: "Enter a full link starting with https://" }).nullable(),
   ),
   category_id: z.preprocess(emptyToNull, z.uuid("Pick a category").nullable()),
+  warranty_months: z.preprocess(
+    (v) => (emptyToNull(v) === null ? null : Number(v)),
+    z
+      .number({ error: "Enter the warranty in months" })
+      .int("Use whole months")
+      .min(0, "Warranty can't be negative")
+      .max(MAX_WARRANTY_MONTHS, `Up to ${MAX_WARRANTY_MONTHS} months`)
+      .nullable(),
+  ),
+  condition: z.enum(PRODUCT_CONDITIONS, { error: "Pick a condition" }),
   in_stock: z.boolean(),
   is_visible: z.boolean(),
   images: z

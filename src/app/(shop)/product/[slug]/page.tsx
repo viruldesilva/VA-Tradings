@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Banknote, ChevronRight, Truck } from "lucide-react";
+import { Markdown, stripMarkdown } from "@/components/content/markdown";
 import { ProductGallery } from "@/components/product/product-gallery";
 import { ProductGrid } from "@/components/product/product-grid";
 import { ProductPurchase } from "@/components/product/product-purchase";
@@ -20,7 +21,7 @@ import { siteConfig } from "@/lib/config";
 type Params = PageProps<"/product/[slug]">["params"];
 
 const summarize = (text: string, max = 160) => {
-  const clean = text.replace(/\s+/g, " ").trim();
+  const clean = stripMarkdown(text).replace(/\s+/g, " ").trim();
   return clean.length > max ? `${clean.slice(0, max - 1)}…` : clean;
 };
 
@@ -112,9 +113,10 @@ async function ProductDetails({ params }: { params: Params }) {
           {product.description && (
             <section>
               <h2 className="mb-2 font-semibold text-brand-dark">Description</h2>
-              <div className="text-sm leading-relaxed whitespace-pre-line text-slate-700">
-                {product.description}
-              </div>
+              <Markdown
+                source={product.description}
+                className="text-sm leading-relaxed text-slate-700"
+              />
             </section>
           )}
         </div>

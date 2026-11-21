@@ -77,7 +77,12 @@ export function ProductForm({ action, categories, product }: Props) {
               />
             </FormField>
 
-            <FormField label="Description" htmlFor="description" error={err("description")}>
+            <FormField
+              label="Description"
+              htmlFor="description"
+              error={err("description")}
+              hint="Formatting: **bold**, ## Heading, - bullet list. Paste from ChatGPT's Copy button."
+            >
               <Textarea
                 id="description"
                 name="description"

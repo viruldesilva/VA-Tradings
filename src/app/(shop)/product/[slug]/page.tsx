@@ -70,6 +70,14 @@ async function ProductDetails({ params }: { params: Params }) {
 
         <div className="flex flex-col gap-5">
           <div>
+            {product.brand && (
+              <Link
+                href={`/shop?brand=${encodeURIComponent(product.brand)}`}
+                className="mb-1 inline-block text-sm font-medium text-primary hover:underline"
+              >
+                {product.brand}
+              </Link>
+            )}
             <h1 className="text-2xl font-bold tracking-tight text-brand-dark sm:text-3xl">
               {product.name}
             </h1>
@@ -174,7 +182,7 @@ function ProductJsonLd({ product, url }: { product: ShopProduct; url: string }) 
         image: product.images,
         url,
         category: product.categories?.name,
-        brand: { "@type": "Brand", name: siteConfig.name },
+        brand: { "@type": "Brand", name: product.brand ?? siteConfig.name },
         offers: {
           "@type": "Offer",
           price: product.price.toFixed(2),

@@ -43,6 +43,7 @@ export type Database = {
           in_stock: boolean;
           is_visible: boolean;
           images: string[];
+          brand: string | null;
           warranty_months: number | null;
           condition: ProductCondition;
           category_id: string | null;
@@ -57,6 +58,7 @@ export type Database = {
           in_stock?: boolean;
           is_visible?: boolean;
           images?: string[];
+          brand?: string | null;
           warranty_months?: number | null;
           condition?: ProductCondition;
           category_id?: string | null;
@@ -71,6 +73,7 @@ export type Database = {
           in_stock?: boolean;
           is_visible?: boolean;
           images?: string[];
+          brand?: string | null;
           warranty_months?: number | null;
           condition?: ProductCondition;
           category_id?: string | null;

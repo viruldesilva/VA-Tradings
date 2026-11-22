@@ -30,6 +30,7 @@ export async function saveProduct(
     supplier_price: formString(formData, "supplier_price"),
     supplier_url: formString(formData, "supplier_url").trim(),
     category_id: formString(formData, "category_id"),
+    brand: formString(formData, "brand").trim(),
     warranty_months: formString(formData, "warranty_months"),
     condition: formString(formData, "condition") || "new",
     in_stock: formBoolean(formData, "in_stock"),

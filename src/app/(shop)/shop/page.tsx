@@ -4,9 +4,10 @@ import { Suspense } from "react";
 import { SearchX } from "lucide-react";
 import { ProductGrid, ProductGridSkeleton } from "@/components/product/product-grid";
 import { CategoryFilter } from "@/components/shop/category-filter";
+import { ShopFilters } from "@/components/shop/shop-filters";
 import { SortSelect } from "@/components/shop/sort-select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getCategories, getProducts } from "@/lib/data/catalog";
+import { getBrands, getCategories, getProducts } from "@/lib/data/catalog";
 import { parseSort } from "@/lib/data/catalog-options";
 
 type ShopSearchParams = PageProps<"/shop">["searchParams"];
@@ -14,10 +15,22 @@ type ShopSearchParams = PageProps<"/shop">["searchParams"];
 async function readFilters(searchParams: ShopSearchParams) {
   const sp = await searchParams;
   const str = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim() : undefined);
+  const price = (v: unknown) => {
+    const n = Number(str(v));
+    return str(v) && Number.isFinite(n) && n >= 0 && n <= 10_000_000 ? n : undefined;
+  };
+  let minPrice = price(sp.min);
+  let maxPrice = price(sp.max);
+  if (minPrice !== undefined && maxPrice !== undefined && minPrice > maxPrice) {
+    [minPrice, maxPrice] = [maxPrice, minPrice];
+  }
   return {
     q: str(sp.q)?.slice(0, 100),
     category: str(sp.category),
     sort: parseSort(sp.sort),
+    brand: str(sp.brand)?.slice(0, 60),
+    minPrice,
+    maxPrice,
   };
 }
 
@@ -48,17 +61,24 @@ export default function ShopPage({ searchParams }: PageProps<"/shop">) {
 }
 
 async function ShopContent({ searchParams }: { searchParams: ShopSearchParams }) {
-  const { q, category, sort } = await readFilters(searchParams);
-  const [categories, products] = await Promise.all([
+  const { q, category, sort, brand, minPrice, maxPrice } = await readFilters(searchParams);
+  const [categories, brands, products] = await Promise.all([
     getCategories(),
-    getProducts({ categorySlug: category, search: q, sort }),
+    getBrands(),
+    getProducts({ categorySlug: category, search: q, sort, brand, minPrice, maxPrice }),
   ]);
+  const activeBrand = brands.find((b) => b.toLowerCase() === brand?.toLowerCase()) ?? brand;
 
   const activeCategory = categories.find((c) => c.slug === category);
   const params: Record<string, string> = {};
   if (q) params.q = q;
   if (activeCategory) params.category = activeCategory.slug;
   if (sort !== "newest") params.sort = sort;
+  // Brand + price are the filter form's own fields; the other controls must keep them.
+  const withFilters = { ...params };
+  if (activeBrand) withFilters.brand = activeBrand;
+  if (minPrice !== undefined) withFilters.min = String(minPrice);
+  if (maxPrice !== undefined) withFilters.max = String(maxPrice);
 
   const title = q ? `Results for “${q}”` : (activeCategory?.name ?? "All products");
 
@@ -82,14 +102,24 @@ async function ShopContent({ searchParams }: { searchParams: ShopSearchParams })
             )}
           </p>
         </div>
-        <SortSelect value={sort} params={params} />
+        <SortSelect value={sort} params={withFilters} />
       </div>
 
       {categories.length > 0 && (
         <div className="mb-6">
-          <CategoryFilter categories={categories} active={activeCategory?.slug} params={params} />
+          <CategoryFilter categories={categories} active={activeCategory?.slug} params={withFilters} />
         </div>
       )}
+
+      <div className="mb-6">
+        <ShopFilters
+          brands={brands}
+          brand={activeBrand}
+          minPrice={minPrice}
+          maxPrice={maxPrice}
+          params={params}
+        />
+      </div>
 
       {products.length > 0 ? (
         <ProductGrid products={products} priorityCount={4} headingLevel={2} />

@@ -3,6 +3,7 @@ import { ListSkeleton } from "@/components/admin/list-skeleton";
 import { PageHeader } from "@/components/admin/page-header";
 import { ProductForm } from "@/components/admin/product-form";
 import { listCategories } from "@/lib/data/admin/categories";
+import { listBrands } from "@/lib/data/admin/products";
 import { saveProduct } from "../actions";
 
 export const metadata = { title: "Add product" };
@@ -19,6 +20,8 @@ export default function NewProductPage() {
 }
 
 async function NewProductForm() {
-  const categories = await listCategories();
-  return <ProductForm action={saveProduct.bind(null, null)} categories={categories} />;
+  const [categories, brands] = await Promise.all([listCategories(), listBrands()]);
+  return (
+    <ProductForm action={saveProduct.bind(null, null)} categories={categories} brands={brands} />
+  );
 }

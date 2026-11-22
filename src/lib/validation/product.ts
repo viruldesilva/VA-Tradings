@@ -30,6 +30,7 @@ export const productSchema = z.object({
     z.url({ protocol: /^https?$/, error: "Enter a full link starting with https://" }).nullable(),
   ),
   category_id: z.preprocess(emptyToNull, z.uuid("Pick a category").nullable()),
+  brand: z.preprocess(emptyToNull, z.string().trim().max(60, "Brand is too long").nullable()),
   warranty_months: z.preprocess(
     (v) => (emptyToNull(v) === null ? null : Number(v)),
     z

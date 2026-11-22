@@ -34,6 +34,8 @@ create table if not exists public.products (
 );
 
 -- Added later: bring existing products tables up to date.
+alter table public.products add column if not exists brand text;
+create index if not exists products_brand_idx on public.products (lower(brand));
 alter table public.products
   add column if not exists warranty_months integer
     check (warranty_months between 0 and 120);

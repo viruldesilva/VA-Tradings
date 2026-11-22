@@ -17,7 +17,7 @@ export type ShopProduct = Omit<Product, "is_visible"> & {
 
 
 const SHOP_PRODUCT_SELECT =
-  "id, name, slug, description, price, in_stock, images, warranty_months, condition, category_id, created_at, categories(name, slug)";
+  "id, name, slug, description, price, in_stock, images, brand, warranty_months, condition, category_id, created_at, categories(name, slug)";
 
 const escapeLike = (term: string) => term.replace(/[\\%_]/g, (c) => `\\${c}`);
 
@@ -42,13 +42,48 @@ export async function getCategories(): Promise<Category[]> {
   return result.data;
 }
 
+/** Distinct brands of visible products, sorted A–Z (case-insensitive de-dupe). */
+export async function getBrands(): Promise<string[]> {
+  "use cache";
+  cacheTag(CACHE_TAGS.products);
+
+  const result = await tryQuery("getBrands", async () => {
+    const { data, error } = await createPublicClient()
+      .from("products")
+      .select("brand")
+      .not("brand", "is", null);
+    if (error) throw error;
+    const seen = new Map<string, string>();
+    for (const row of data) {
+      const brand = row.brand?.trim();
+      if (brand && !seen.has(brand.toLowerCase())) seen.set(brand.toLowerCase(), brand);
+    }
+    return [...seen.values()].sort((a, b) => a.localeCompare(b));
+  });
+
+  if (!result.ok) {
+    cacheLife("minutes");
+    return [];
+  }
+  cacheLife("hours");
+  return result.data;
+}
+
 export async function getProducts(
-  options: { categorySlug?: string; search?: string; sort?: ProductSort; limit?: number } = {},
+  options: {
+    categorySlug?: string;
+    search?: string;
+    sort?: ProductSort;
+    limit?: number;
+    brand?: string;
+    minPrice?: number;
+    maxPrice?: number;
+  } = {},
 ): Promise<ShopProduct[]> {
   "use cache";
   cacheTag(CACHE_TAGS.products);
 
-  const { categorySlug, search, sort = "newest", limit = 60 } = options;
+  const { categorySlug, search, sort = "newest", limit = 60, brand, minPrice, maxPrice } = options;
 
   const result = await tryQuery("getProducts", async () => {
     let query = createPublicClient().from("products").select(SHOP_PRODUCT_SELECT);
@@ -58,6 +93,10 @@ export async function getProducts(
       if (!category) return [];
       query = query.eq("category_id", category.id);
     }
+
+    if (brand) query = query.ilike("brand", escapeLike(brand));
+    if (minPrice !== undefined) query = query.gte("price", minPrice);
+    if (maxPrice !== undefined) query = query.lte("price", maxPrice);
 
     const term = search?.trim();
     if (term) query = query.ilike("name", `%${escapeLike(term)}%`);

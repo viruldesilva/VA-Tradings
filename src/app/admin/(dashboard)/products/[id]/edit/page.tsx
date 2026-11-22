@@ -5,7 +5,7 @@ import { ListSkeleton } from "@/components/admin/list-skeleton";
 import { PageHeader } from "@/components/admin/page-header";
 import { ProductForm } from "@/components/admin/product-form";
 import { listCategories } from "@/lib/data/admin/categories";
-import { getAdminProduct } from "@/lib/data/admin/products";
+import { getAdminProduct, listBrands } from "@/lib/data/admin/products";
 import { saveProduct } from "../../actions";
 
 export const metadata = { title: "Edit product" };
@@ -29,13 +29,18 @@ async function EditProductForm({
   const { id } = await params;
   if (!z.uuid().safeParse(id).success) notFound();
 
-  const [product, categories] = await Promise.all([getAdminProduct(id), listCategories()]);
+  const [product, categories, brands] = await Promise.all([
+    getAdminProduct(id),
+    listCategories(),
+    listBrands(),
+  ]);
   if (!product) notFound();
 
   return (
     <ProductForm
       action={saveProduct.bind(null, product.id)}
       categories={categories}
+      brands={brands}
       product={product}
     />
   );

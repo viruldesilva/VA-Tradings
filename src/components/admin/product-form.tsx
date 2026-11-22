@@ -23,10 +23,12 @@ import { ImageUploader } from "./image-uploader";
 type Props = {
   action: (prev: ActionState, formData: FormData) => Promise<ActionState>;
   categories: Category[];
+  /** Brands already in use, offered as suggestions. */
+  brands?: string[];
   product?: AdminProduct | null;
 };
 
-export function ProductForm({ action, categories, product }: Props) {
+export function ProductForm({ action, categories, brands = [], product }: Props) {
   const { state, pending, onSubmit } = useActionForm(action);
   const errors = state?.fieldErrors ?? {};
   const err = (field: string) => errors[field]?.[0];
@@ -60,6 +62,29 @@ export function ProductForm({ action, categories, product }: Props) {
                 aria-invalid={!!err("name")}
                 required
               />
+            </FormField>
+
+            <FormField
+              label="Brand"
+              htmlFor="brand"
+              error={err("brand")}
+              hint="Used for the shop's brand filter. Pick an existing brand or type a new one."
+            >
+              <Input
+                id="brand"
+                name="brand"
+                list="brand-options"
+                maxLength={60}
+                autoComplete="off"
+                placeholder="e.g. JEDEL"
+                defaultValue={product?.brand ?? ""}
+                aria-invalid={!!err("brand")}
+              />
+              <datalist id="brand-options">
+                {brands.map((b) => (
+                  <option key={b} value={b} />
+                ))}
+              </datalist>
             </FormField>
 
             <FormField

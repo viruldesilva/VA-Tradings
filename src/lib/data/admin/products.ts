@@ -41,6 +41,23 @@ export async function getAdminProduct(id: string): Promise<AdminProduct | null> 
   return data as AdminProduct | null;
 }
 
+/** Distinct brands already used by any product (for the form's suggestions). */
+export async function listBrands(): Promise<string[]> {
+  const { supabase } = await requireAdmin();
+  const { data, error } = await supabase.from("products").select("brand").not("brand", "is", null);
+  if (error) throw error;
+  return distinctBrands(data.map((r) => r.brand));
+}
+
+function distinctBrands(values: (string | null)[]): string[] {
+  const seen = new Map<string, string>();
+  for (const v of values) {
+    const brand = v?.trim();
+    if (brand && !seen.has(brand.toLowerCase())) seen.set(brand.toLowerCase(), brand);
+  }
+  return [...seen.values()].sort((a, b) => a.localeCompare(b));
+}
+
 function splitInput(input: ProductInput) {
   const { supplier_price, supplier_url, slug, ...product } = input;
   return { product, slug, privateFields: { supplier_price, supplier_url } };

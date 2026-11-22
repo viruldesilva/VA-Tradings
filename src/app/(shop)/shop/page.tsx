@@ -7,7 +7,7 @@ import { CategoryFilter } from "@/components/shop/category-filter";
 import { ShopFilters } from "@/components/shop/shop-filters";
 import { SortSelect } from "@/components/shop/sort-select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getBrands, getCategories, getProducts } from "@/lib/data/catalog";
+import { getBrands, getCategories, getPriceBounds, getProducts } from "@/lib/data/catalog";
 import { parseSort } from "@/lib/data/catalog-options";
 
 type ShopSearchParams = PageProps<"/shop">["searchParams"];
@@ -62,9 +62,10 @@ export default function ShopPage({ searchParams }: PageProps<"/shop">) {
 
 async function ShopContent({ searchParams }: { searchParams: ShopSearchParams }) {
   const { q, category, sort, brand, minPrice, maxPrice } = await readFilters(searchParams);
-  const [categories, brands, products] = await Promise.all([
+  const [categories, brands, priceBounds, products] = await Promise.all([
     getCategories(),
     getBrands(),
+    getPriceBounds(),
     getProducts({ categorySlug: category, search: q, sort, brand, minPrice, maxPrice }),
   ]);
   const activeBrand = brands.find((b) => b.toLowerCase() === brand?.toLowerCase()) ?? brand;
@@ -115,6 +116,7 @@ async function ShopContent({ searchParams }: { searchParams: ShopSearchParams })
         <ShopFilters
           brands={brands}
           brand={activeBrand}
+          priceBounds={priceBounds}
           minPrice={minPrice}
           maxPrice={maxPrice}
           params={params}

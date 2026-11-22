@@ -69,6 +69,31 @@ export async function getBrands(): Promise<string[]> {
   return result.data;
 }
 
+/** Cheapest and most expensive visible product, for the price slider's range. */
+export async function getPriceBounds(): Promise<{ min: number; max: number } | null> {
+  "use cache";
+  cacheTag(CACHE_TAGS.products);
+
+  const result = await tryQuery("getPriceBounds", async () => {
+    const supabase = createPublicClient();
+    const [low, high] = await Promise.all([
+      supabase.from("products").select("price").order("price", { ascending: true }).limit(1),
+      supabase.from("products").select("price").order("price", { ascending: false }).limit(1),
+    ]);
+    if (low.error) throw low.error;
+    if (high.error) throw high.error;
+    if (!low.data[0] || !high.data[0]) return null;
+    return { min: Number(low.data[0].price), max: Number(high.data[0].price) };
+  });
+
+  if (!result.ok) {
+    cacheLife("minutes");
+    return null;
+  }
+  cacheLife("hours");
+  return result.data;
+}
+
 export async function getProducts(
   options: {
     categorySlug?: string;

@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { syncSeoulTradingProducts } from "@/lib/suppliers/sync";
 
-export const dynamic = "force-dynamic";
-
 /**
  * Cron handler to sync product availability and prices from Seoul Trading.
  *

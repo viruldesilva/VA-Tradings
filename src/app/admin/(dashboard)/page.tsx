@@ -5,6 +5,7 @@ import { ListSkeleton } from "@/components/admin/list-skeleton";
 import { OrdersTable } from "@/components/admin/orders-table";
 import { PageHeader } from "@/components/admin/page-header";
 import { StatCard } from "@/components/admin/stat-card";
+import { SyncSupplierButton } from "@/components/admin/sync-supplier-button";
 import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getDashboardStats } from "@/lib/data/admin/orders";
@@ -17,6 +18,7 @@ export default function AdminHomePage() {
   return (
     <>
       <PageHeader title="Dashboard">
+        <SyncSupplierButton />
         <Link href="/admin/products/new" className={buttonVariants({ className: "h-9" })}>
           <Plus /> Add product
         </Link>

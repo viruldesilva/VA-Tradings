@@ -72,3 +72,27 @@ export async function removeProduct(productId: string): Promise<ActionState> {
   refresh();
   return actionOk("Product deleted.");
 }
+
+/** Manually triggers stock & supplier price synchronization. */
+export async function triggerSupplierSync(): Promise<ActionState> {
+  try {
+    const { syncSeoulTradingProducts } = await import("@/lib/suppliers/sync");
+    const summary = await syncSeoulTradingProducts();
+    refresh();
+
+    if (summary.totalChecked === 0) {
+      return actionOk("No products found with a Seoul Trading supplier URL.");
+    }
+
+    const message = `Checked ${summary.totalChecked} items: ${summary.updated} updated, ${summary.unchanged} unchanged${
+      summary.failed > 0 ? `, ${summary.failed} failed/missing` : ""
+    }.`;
+    return actionOk(message);
+  } catch (err) {
+    console.error("[triggerSupplierSync]", err);
+    return actionError(
+      err instanceof Error ? err.message : "Failed to sync with supplier.",
+    );
+  }
+}
+

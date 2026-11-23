@@ -5,6 +5,7 @@ import { AdminSearch } from "@/components/admin/admin-search";
 import { ListSkeleton } from "@/components/admin/list-skeleton";
 import { PageHeader } from "@/components/admin/page-header";
 import { ProductsTable } from "@/components/admin/products-table";
+import { SyncSupplierButton } from "@/components/admin/sync-supplier-button";
 import { buttonVariants } from "@/components/ui/button";
 import { listAdminProducts } from "@/lib/data/admin/products";
 
@@ -17,6 +18,7 @@ export default function AdminProductsPage({ searchParams }: PageProps<"/admin/pr
         <Suspense>
           <AdminSearch action="/admin/products" placeholder="Search products" />
         </Suspense>
+        <SyncSupplierButton />
         <Link href="/admin/products/new" className={buttonVariants({ className: "h-9" })}>
           <Plus /> Add product
         </Link>

@@ -205,7 +205,7 @@ export function ProductForm({ action, categories, brands = [], product }: Props)
               label="Warranty (months)"
               htmlFor="warranty_months"
               error={err("warranty_months")}
-              hint={`e.g. 6 shows as "06 Months", 12 as "1 Year". Leave blank for no warranty.`}
+              hint={`e.g. 6 shows as "06 Months", 12 as "1 Year". Defaults to 6 months.`}
             >
               <Input
                 id="warranty_months"
@@ -215,7 +215,7 @@ export function ProductForm({ action, categories, brands = [], product }: Props)
                 min={0}
                 max={MAX_WARRANTY_MONTHS}
                 step={1}
-                defaultValue={product?.warranty_months?.toString() ?? ""}
+                defaultValue={product?.warranty_months?.toString() ?? "6"}
                 aria-invalid={!!err("warranty_months")}
               />
             </FormField>

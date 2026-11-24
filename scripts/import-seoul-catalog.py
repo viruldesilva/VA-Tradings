@@ -166,7 +166,7 @@ def import_product(item: dict, category_cache: dict) -> bool:
     in_stock = bool(item.get("is_in_stock", True))
     desc_html = item.get("description", "") or item.get("short_description", "")
     description = clean_html_to_markdown(desc_html)
-    warranty_months = extract_warranty_months(desc_html, name)
+    warranty_months = extract_warranty_months(desc_html, name) or 6
 
     # Category
     cat_id = None

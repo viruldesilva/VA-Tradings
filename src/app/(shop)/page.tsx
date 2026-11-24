@@ -1,31 +1,17 @@
 import Link from "next/link";
-import { CategoryList } from "@/components/home/category-list";
 import { Hero } from "@/components/home/hero";
 import { ProductGrid } from "@/components/product/product-grid";
 import { SectionHeading } from "@/components/shop/section-heading";
-import { getCategories, getProducts } from "@/lib/data/catalog";
+import { getProducts } from "@/lib/data/catalog";
 
 export default function HomePage() {
   return (
     <>
       <Hero />
       <div className="mx-auto max-w-6xl space-y-12 px-4 py-10">
-        <Categories />
         <LatestProducts />
       </div>
     </>
-  );
-}
-
-async function Categories() {
-  const categories = await getCategories();
-  if (categories.length === 0) return null;
-
-  return (
-    <section>
-      <SectionHeading title="Shop by category" href="/shop" />
-      <CategoryList categories={categories} />
-    </section>
   );
 }
 

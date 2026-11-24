@@ -48,6 +48,16 @@ def clean_html_to_markdown(html_text: str) -> str:
     text = re.sub(r"\n{3,}", "\n\n", text)
     return text.strip()
 
+def extract_warranty_months(desc_html: str, name: str) -> int | None:
+    text = (desc_html or "") + " " + (name or "")
+    ym = re.search(r'(\d+)\s*(?:year|yr)', text, re.I)
+    mm = re.search(r'(\d+)\s*month', text, re.I)
+    if ym:
+        return int(ym.group(1)) * 12
+    elif mm:
+        return int(mm.group(1))
+    return None
+
 def slugify(text: str) -> str:
     s = text.lower()
     s = re.sub(r"[^a-z0-9]+", "-", s)
@@ -156,6 +166,7 @@ def import_product(item: dict, category_cache: dict) -> bool:
     in_stock = bool(item.get("is_in_stock", True))
     desc_html = item.get("description", "") or item.get("short_description", "")
     description = clean_html_to_markdown(desc_html)
+    warranty_months = extract_warranty_months(desc_html, name)
 
     # Category
     cat_id = None
@@ -197,6 +208,8 @@ def import_product(item: dict, category_cache: dict) -> bool:
             "is_visible": True,
             "category_id": cat_id,
         }
+        if warranty_months is not None:
+            update_data["warranty_months"] = warranty_months
         if supabase_images:
             update_data["images"] = supabase_images
 
@@ -247,6 +260,7 @@ def import_product(item: dict, category_cache: dict) -> bool:
         "is_visible": True,
         "category_id": cat_id,
         "images": supabase_images,
+        "warranty_months": warranty_months,
     }
 
     req_ins = urllib.request.Request(
